@@ -44,7 +44,7 @@ router.get("/messages/conversations", requireAuth, async (req, res): Promise<voi
     ORDER BY lm.created_at DESC
   `);
 
-  const conversations = (rows as unknown as unknown[]).map((r: unknown) => {
+  const conversations = ((rows as unknown as { rows: unknown[] }).rows ?? []).map((r: unknown) => {
     const row = r as Record<string, unknown>;
     return {
       user: {

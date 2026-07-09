@@ -1,7 +1,8 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { format } from "date-fns";
-import { ArrowLeft, Shield, User as UserIcon, Calendar, Mail, FileText } from "lucide-react";
+import { ArrowLeft, Shield, User as UserIcon, Calendar, Mail, FileText, MessageSquare } from "lucide-react";
 import { useGetUser, getGetUserQueryKey } from "@workspace/api-client-react";
+import { useAuth } from "@/hooks/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +12,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function UserDetail() {
   const params = useParams();
+  const [, setLocation] = useLocation();
   const id = parseInt(params.id || "0", 10);
+  const { user: me } = useAuth();
 
   const { data: user, isLoading, isError } = useGetUser(id, {
     query: {
@@ -50,6 +53,8 @@ export default function UserDetail() {
     );
   }
 
+  const isMe = me?.id === user.id;
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Link href="/users">
@@ -64,7 +69,7 @@ export default function UserDetail() {
         <div className="h-32 md:h-48 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary w-full relative">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
         </div>
-        
+
         <div className="px-6 md:px-10 pb-8 relative">
           {/* Profile Header */}
           <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-6 -mt-12 sm:-mt-16 mb-8 relative z-10">
@@ -74,18 +79,30 @@ export default function UserDetail() {
                 {user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            
-            <div className="flex-1 pb-1 sm:pb-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{user.name}</h1>
-                <Badge 
-                  variant={user.role === 'admin' ? 'default' : 'secondary'} 
-                  className="capitalize"
-                >
-                  {user.role}
-                </Badge>
+
+            <div className="flex-1 pb-1 sm:pb-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{user.name}</h1>
+                  <Badge
+                    variant={user.role === 'admin' ? 'default' : 'secondary'}
+                    className="capitalize"
+                  >
+                    {user.role}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground font-mono text-sm mt-1">{user.email}</p>
               </div>
-              <p className="text-muted-foreground font-mono text-sm mt-1">{user.email}</p>
+
+              {!isMe && (
+                <Button
+                  onClick={() => setLocation(`/messages?with=${user.id}`)}
+                  className="sm:mb-1 gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Send Message
+                </Button>
+              )}
             </div>
           </div>
 

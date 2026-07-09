@@ -126,7 +126,11 @@ export default function UsersList() {
               </TableRow>
             ) : (
               users.map((user) => (
-                <TableRow key={user.id} className="group hover:bg-secondary/20 transition-colors">
+                <TableRow
+                  key={user.id}
+                  className="group hover:bg-secondary/20 transition-colors cursor-pointer"
+                  onClick={() => window.location.href = `/users/${user.id}`}
+                >
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border border-border/50">
