@@ -130,6 +130,16 @@ export const UpdateMeResponse = zod.object({
 
 
 /**
+ * @summary Delete a user (admin only)
+ */
+export const DeleteUserParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteUserResponse = zod.void()
+
+
+/**
  * @summary Get a user by ID
  */
 export const GetUserParams = zod.object({

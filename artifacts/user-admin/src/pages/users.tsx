@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { format } from "date-fns";
-import { Search, ChevronLeft, ChevronRight, Shield, User as UserIcon } from "lucide-react";
-import { useListUsers } from "@workspace/api-client-react";
+import { Search, ChevronLeft, ChevronRight, Shield, User as UserIcon, Trash2 } from "lucide-react";
+import { useListUsers, useDeleteUser, getListUsersQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,14 +19,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function UsersList() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const limit = 10;
-  
+  const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === "admin";
+
   const [debouncedSearch, setDebouncedSearch] = useState(search);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(timer);
@@ -36,9 +52,18 @@ export default function UsersList() {
     limit,
   });
 
+  const deleteMutation = useDeleteUser({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListUsersQueryKey() });
+        setDeleteTarget(null);
+      },
+    },
+  });
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setPage(1); 
+    setPage(1);
   };
 
   const users = data?.users || [];
@@ -117,12 +142,12 @@ export default function UsersList() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={user.role === 'admin' ? 'default' : 'secondary'} 
+                    <Badge
+                      variant={user.role === "admin" ? "default" : "secondary"}
                       className="font-medium capitalize text-[10px] tracking-wide"
                     >
-                      {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                      {user.role === 'user' && <UserIcon className="w-3 h-3 mr-1" />}
+                      {user.role === "admin" && <Shield className="w-3 h-3 mr-1" />}
+                      {user.role === "user" && <UserIcon className="w-3 h-3 mr-1" />}
                       {user.role}
                     </Badge>
                   </TableCell>
@@ -130,11 +155,23 @@ export default function UsersList() {
                     {format(new Date(user.createdAt), "MMM d, yyyy")}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/users/${user.id}`}>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        View Profile
-                      </Button>
-                    </Link>
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Link href={`/users/${user.id}`}>
+                        <Button variant="ghost" size="sm">
+                          View
+                        </Button>
+                      </Link>
+                      {isAdmin && user.id !== currentUser?.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteTarget({ id: user.id, name: user.name })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -170,6 +207,27 @@ export default function UsersList() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{deleteTarget?.name}</strong> and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteMutation.mutate({ id: deleteTarget.id })}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -82,6 +82,40 @@ router.put("/users/me", requireAuth, async (req, res): Promise<void> => {
   res.json(safeUser(user));
 });
 
+router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
+  const auth = (req as Request & { auth: AuthPayload }).auth;
+
+  if (auth.role !== "admin") {
+    res.status(403).json({ error: "Admin role required" });
+    return;
+  }
+
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid user ID" });
+    return;
+  }
+
+  if (id === auth.userId) {
+    res.status(400).json({ error: "You cannot delete your own account" });
+    return;
+  }
+
+  const [deleted] = await db
+    .delete(usersTable)
+    .where(eq(usersTable.id, id))
+    .returning({ id: usersTable.id });
+
+  if (!deleted) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  res.sendStatus(204);
+});
+
 router.get("/users/:id", requireAuth, async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
