@@ -45,6 +45,27 @@ export interface UserListResponse {
   limit: number;
 }
 
+export interface Message {
+  id: number;
+  senderId: number;
+  recipientId: number;
+  content: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface MessageInput {
+  recipientId: number;
+  /** @minLength 1 */
+  content: string;
+}
+
+export interface Conversation {
+  user: User;
+  lastMessage: Message;
+  unreadCount: number;
+}
+
 export interface RegisterInput {
   /** @minLength 1 */
   name: string;
@@ -76,6 +97,21 @@ search?: string;
 page?: number;
 /**
  * Items per page (default 20)
+ */
+limit?: number;
+};
+
+export type ListMessagesParams = {
+/**
+ * The ID of the other user in the conversation
+ */
+withUserId: number;
+/**
+ * Load messages with id less than this (pagination cursor)
+ */
+before?: number;
+/**
+ * Max messages to return (default 50)
  */
 limit?: number;
 };

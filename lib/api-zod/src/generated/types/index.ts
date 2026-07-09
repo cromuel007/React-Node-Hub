@@ -7,10 +7,14 @@
  */
 
 export * from './authResponse';
+export * from './conversation';
 export * from './errorResponse';
 export * from './healthStatus';
+export * from './listMessagesParams';
 export * from './listUsersParams';
 export * from './loginInput';
+export * from './message';
+export * from './messageInput';
 export * from './profileUpdate';
 export * from './registerInput';
 export * from './user';

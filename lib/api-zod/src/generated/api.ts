@@ -130,6 +130,73 @@ export const UpdateMeResponse = zod.object({
 
 
 /**
+ * @summary Get conversation history with a user
+ */
+export const ListMessagesQueryParams = zod.object({
+  "withUserId": zod.coerce.number().describe('The ID of the other user in the conversation'),
+  "before": zod.coerce.number().optional().describe('Load messages with id less than this (pagination cursor)'),
+  "limit": zod.coerce.number().optional().describe('Max messages to return (default 50)')
+})
+
+export const ListMessagesResponseItem = zod.object({
+  "id": zod.number(),
+  "senderId": zod.number(),
+  "recipientId": zod.number(),
+  "content": zod.string(),
+  "read": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListMessagesResponse = zod.array(ListMessagesResponseItem)
+
+
+/**
+ * @summary Send a message to a user
+ */
+
+
+
+export const SendMessageBody = zod.object({
+  "recipientId": zod.number(),
+  "content": zod.string().min(1)
+})
+
+export const SendMessageResponse = zod.object({
+  "id": zod.number(),
+  "senderId": zod.number(),
+  "recipientId": zod.number(),
+  "content": zod.string(),
+  "read": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get list of users the current user has conversations with
+ */
+export const ListConversationsResponseItem = zod.object({
+  "user": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "role": zod.enum(['admin', 'user']),
+  "createdAt": zod.coerce.date()
+}),
+  "lastMessage": zod.object({
+  "id": zod.number(),
+  "senderId": zod.number(),
+  "recipientId": zod.number(),
+  "content": zod.string(),
+  "read": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}),
+  "unreadCount": zod.number()
+})
+export const ListConversationsResponse = zod.array(ListConversationsResponseItem)
+
+
+/**
  * @summary Delete a user (admin only)
  */
 export const DeleteUserParams = zod.object({

@@ -12,6 +12,7 @@ import Dashboard from '@/pages/dashboard';
 import UsersList from '@/pages/users';
 import UserDetail from '@/pages/user-detail';
 import Profile from '@/pages/profile';
+import Messages from '@/pages/messages';
 import { Layout } from '@/components/layout';
 import { Loader2 } from 'lucide-react';
 
@@ -84,6 +85,7 @@ function Router() {
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/users" component={() => <ProtectedRoute component={UsersList} />} />
       <Route path="/users/:id" component={() => <ProtectedRoute component={UserDetail} />} />
+      <Route path="/messages" component={() => <ProtectedRoute component={Messages} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
       
       <Route component={NotFound} />

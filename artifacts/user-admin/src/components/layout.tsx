@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, UserCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, UserCircle, LogOut, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ export function Layout({ children }: LayoutProps) {
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/users", label: "User Directory", icon: Users },
+    { href: "/messages", label: "Messages", icon: MessageSquare },
     { href: "/profile", label: "My Profile", icon: UserCircle },
   ];
 
