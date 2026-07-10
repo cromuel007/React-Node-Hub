@@ -15,7 +15,6 @@ import Profile from '@/pages/profile';
 import Messages from '@/pages/messages';
 import { Layout } from '@/components/layout';
 import { Loader2 } from 'lucide-react';
-import 'dotenv/config';
 
 const queryClient = new QueryClient();
 
