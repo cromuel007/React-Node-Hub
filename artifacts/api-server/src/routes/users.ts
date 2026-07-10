@@ -34,7 +34,7 @@ router.get("/users", requireAuth, async (req, res): Promise<void> => {
     const pattern = `%${search.trim()}%`;
     users = await baseQuery
       .where(or(ilike(usersTable.name, pattern), ilike(usersTable.email, pattern)))
-      .orderBy(usersTable.createdAt)
+      .orderBy(usersTable.name)
       .limit(limitNum)
       .offset(offset);
     totalRows = await countQuery.where(
@@ -42,7 +42,7 @@ router.get("/users", requireAuth, async (req, res): Promise<void> => {
     );
   } else {
     users = await baseQuery
-      .orderBy(usersTable.createdAt)
+      .orderBy(usersTable.name)
       .limit(limitNum)
       .offset(offset);
     totalRows = await countQuery;

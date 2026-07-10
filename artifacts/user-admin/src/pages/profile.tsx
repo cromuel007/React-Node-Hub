@@ -37,6 +37,7 @@ const profileSchema = z.object({
 
 export default function Profile() {
   const token = localStorage.getItem("token");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useAuth();
   const { toast } = useToast();
@@ -230,17 +231,32 @@ export default function Profile() {
 
                     <div className="mt-3 max-w-md space-y-2">
                       <Input
+                        ref={fileInputRef}
                         type="file"
                         accept="image/*"
+                        className="hidden"
                         onChange={handleAvatarUpload}
                         disabled={uploading}
                       />
 
-                      {uploading && (
-                        <p className="text-sm text-muted-foreground">
-                          Uploading...
-                        </p>
-                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="mr-2 h-4 w-4" />
+                            Choose File
+                          </>
+                        )}
+                      </Button>
                     </div>
 
                     <FormMessage />
