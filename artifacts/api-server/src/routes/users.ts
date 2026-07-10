@@ -3,6 +3,8 @@ import { eq, ilike, or, count } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { requireAuth, type AuthPayload } from "../middlewares/auth";
 import { UpdateMeBody } from "@workspace/api-zod";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 const router: IRouter = Router();
 
@@ -63,10 +65,23 @@ router.put("/users/me", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  // Get existing user
+  const [existingUser] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, auth.userId));
+
+  if (!existingUser) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
   const updates: Partial<typeof usersTable.$inferInsert> = {};
   if (parsed.data.name != null) updates.name = parsed.data.name;
   if (parsed.data.bio != null) updates.bio = parsed.data.bio;
   if (parsed.data.avatarUrl != null) updates.avatarUrl = parsed.data.avatarUrl;
+
+  const oldAvatarUrl = existingUser.avatarUrl;
 
   const [user] = await db
     .update(usersTable)
@@ -77,6 +92,27 @@ router.put("/users/me", requireAuth, async (req, res): Promise<void> => {
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
+  }
+
+  // Delete previous avatar if it was replaced
+  if (
+    oldAvatarUrl &&
+    user.avatarUrl &&
+    oldAvatarUrl !== user.avatarUrl
+  ) {
+    try {
+      const uploadsBase = `${req.protocol}://${req.get("host")}/uploads/`;
+
+      if (oldAvatarUrl.startsWith(uploadsBase)) {
+        const filename = path.basename(oldAvatarUrl);
+
+        await fs.unlink(
+          path.join(process.cwd(), "uploads", filename)
+        );
+      }
+    } catch (err) {
+      console.error("Failed to delete old avatar:", err);
+    }
   }
 
   res.json(safeUser(user));
