@@ -59,8 +59,21 @@ export default function Profile() {
     try {
       setUploading(true);
 
-      const formData = new FormData();
-      formData.append("file", file);
+      // Delete previously uploaded avatar if it hasn't been saved yet
+      if (
+        uploadedAvatarUrlRef.current &&
+        !avatarSavedRef.current
+      ) {
+        try {
+          await deleteAvatar({
+            url: uploadedAvatarUrlRef.current,
+          });
+        } catch (err) {
+          console.error("Failed to delete previous avatar:", err);
+        }
+
+        uploadedAvatarUrlRef.current = null;
+      }
 
       const data = await uploadAvatarMutation.mutateAsync({
         data: {
@@ -74,11 +87,14 @@ export default function Profile() {
       });
 
       uploadedAvatarUrlRef.current = data.url;
-
+      avatarSavedRef.current = false;
     } catch (err) {
       console.error(err);
     } finally {
       setUploading(false);
+
+      // Allow selecting the same file again
+      e.target.value = "";
     }
   }
 
