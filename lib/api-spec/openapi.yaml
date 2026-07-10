@@ -335,7 +335,61 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+            
+  /uploads/avatar:
+    post:
+      operationId: uploadAvatar
+      tags: [users]
+      summary: Upload avatar image
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AvatarUploadRequest"
+      responses:
+        "200":
+          description: Avatar uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvatarUploadResult"
+        "400":
+          description: Invalid upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
+    delete:
+      operationId: deleteAvatar
+      tags: [users]
+      summary: Delete uploaded avatar
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvatarDeleteRequest"
+      responses:
+        "200":
+          description: Avatar deleted
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -502,4 +556,29 @@ components:
         bio:
           type: string
         avatarUrl:
+          type: string
+
+    AvatarUploadRequest:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+
+    AvatarUploadResult:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+
+    AvatarDeleteRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
           type: string

@@ -1,11 +1,11 @@
-import { Router } from "express";
+import { Router, type IRouter } from "express";
 import multer from "multer";
 import path from "node:path";
 import crypto from "node:crypto";
-import { requireAuth } from "../middlewares/auth";
 import fs from "node:fs/promises";
+import { requireAuth } from "../middlewares/auth";
 
-const router = Router();
+const router: IRouter = Router();
 
 const storage = multer.diskStorage({
   destination: "uploads",
@@ -20,11 +20,12 @@ router.post(
   "/uploads/avatar",
   requireAuth,
   upload.single("file"),
-  (req, res) => {
+  async (req, res): Promise<void> => {
     if (!req.file) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "No file uploaded",
       });
+      return;
     }
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
@@ -38,13 +39,14 @@ router.post(
 router.delete(
   "/uploads/avatar",
   requireAuth,
-  async (req, res) => {
+  async (req, res): Promise<void> => {
     const { url } = req.body;
 
     if (!url) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "File URL is required",
       });
+      return;
     }
 
     try {

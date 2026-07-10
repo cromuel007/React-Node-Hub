@@ -224,3 +224,25 @@ export const GetUserResponse = zod.object({
 })
 
 
+/**
+ * @summary Upload avatar image
+ */
+export const UploadAvatarBody = zod.object({
+  "file": zod.instanceof(File)
+})
+
+export const UploadAvatarResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Delete uploaded avatar
+ */
+export const DeleteAvatarBody = zod.object({
+  "url": zod.string()
+})
+
+export const DeleteAvatarResponse = zod.unknown()
+
+

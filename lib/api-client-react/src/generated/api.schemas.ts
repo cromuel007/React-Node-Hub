@@ -86,6 +86,18 @@ export interface ProfileUpdate {
   avatarUrl?: string;
 }
 
+export interface AvatarUploadRequest {
+  file: Blob;
+}
+
+export interface AvatarUploadResult {
+  url: string;
+}
+
+export interface AvatarDeleteRequest {
+  url: string;
+}
+
 export type ListUsersParams = {
 /**
  * Search by name or email

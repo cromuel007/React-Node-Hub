@@ -21,6 +21,9 @@ import type {
 
 import type {
   AuthResponse,
+  AvatarDeleteRequest,
+  AvatarUploadRequest,
+  AvatarUploadResult,
   Conversation,
   ErrorResponse,
   HealthStatus,
@@ -893,4 +896,148 @@ export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError =
 
 
 
+
+export const getUploadAvatarUrl = () => {
+
+
+
+
+  return `/api/uploads/avatar`
+}
+
+/**
+ * @summary Upload avatar image
+ */
+export const uploadAvatar = async (avatarUploadRequest: AvatarUploadRequest, options?: RequestInit): Promise<AvatarUploadResult> => {
+    const formData = new FormData();
+formData.append(`file`, avatarUploadRequest.file);
+
+  return customFetch<AvatarUploadResult>(getUploadAvatarUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getUploadAvatarMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadAvatar>>, TError,{data: BodyType<AvatarUploadRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadAvatar>>, TError,{data: BodyType<AvatarUploadRequest>}, TContext> => {
+
+const mutationKey = ['uploadAvatar'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadAvatar>>, {data: BodyType<AvatarUploadRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  uploadAvatar(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadAvatarMutationResult = NonNullable<Awaited<ReturnType<typeof uploadAvatar>>>
+    export type UploadAvatarMutationBody = BodyType<AvatarUploadRequest>
+    export type UploadAvatarMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Upload avatar image
+ */
+export const useUploadAvatar = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadAvatar>>, TError,{data: BodyType<AvatarUploadRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uploadAvatar>>,
+        TError,
+        {data: BodyType<AvatarUploadRequest>},
+        TContext
+      > => {
+      return useMutation(getUploadAvatarMutationOptions(options));
+    }
+
+export const getDeleteAvatarUrl = () => {
+
+
+
+
+  return `/api/uploads/avatar`
+}
+
+/**
+ * @summary Delete uploaded avatar
+ */
+export const deleteAvatar = async (avatarDeleteRequest: AvatarDeleteRequest, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteAvatarUrl(),
+  {
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(avatarDeleteRequest)
+  }
+);}
+
+
+
+
+
+export const getDeleteAvatarMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAvatar>>, TError,{data: BodyType<AvatarDeleteRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAvatar>>, TError,{data: BodyType<AvatarDeleteRequest>}, TContext> => {
+
+const mutationKey = ['deleteAvatar'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAvatar>>, {data: BodyType<AvatarDeleteRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  deleteAvatar(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAvatarMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAvatar>>>
+    export type DeleteAvatarMutationBody = BodyType<AvatarDeleteRequest>
+    export type DeleteAvatarMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete uploaded avatar
+ */
+export const useDeleteAvatar = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAvatar>>, TError,{data: BodyType<AvatarDeleteRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAvatar>>,
+        TError,
+        {data: BodyType<AvatarDeleteRequest>},
+        TContext
+      > => {
+      return useMutation(getDeleteAvatarMutationOptions(options));
+    }
 

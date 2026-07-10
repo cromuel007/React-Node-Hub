@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Camera } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateMe, getGetMeQueryKey } from "@workspace/api-client-react";
+import { useUpdateMe, useUploadAvatar, deleteAvatar, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,10 +43,10 @@ export default function Profile() {
   const queryClient = useQueryClient();
 
   const [uploading, setUploading] = useState(false);
-  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
-  const [avatarSaved, setAvatarSaved] = useState(false);
   const uploadedAvatarUrlRef = useRef<string | null>(null);
   const avatarSavedRef = useRef(false);
+
+  const uploadAvatarMutation = useUploadAvatar();
 
   async function handleAvatarUpload(
     e: React.ChangeEvent<HTMLInputElement>
@@ -61,19 +61,11 @@ export default function Profile() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/uploads/avatar", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const data = await uploadAvatarMutation.mutateAsync({
+        data: {
+          file,
         },
-        body: formData,
       });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const data = await response.json();
 
       form.setValue("avatarUrl", data.url, {
         shouldValidate: true,
@@ -116,16 +108,9 @@ export default function Profile() {
       const uploadedUrl = uploadedAvatarUrlRef.current;
 
       if (uploadedUrl && !avatarSavedRef.current) {
-        fetch("/api/uploads/avatar", {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url: uploadedUrl,
-          }),
-        });
+        void deleteAvatar({
+          url: uploadedUrl,
+        }).catch(console.error);
       }
     };
   }, []);

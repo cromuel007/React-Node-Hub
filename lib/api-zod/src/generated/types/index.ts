@@ -7,6 +7,9 @@
  */
 
 export * from './authResponse';
+export * from './avatarDeleteRequest';
+export * from './avatarUploadRequest';
+export * from './avatarUploadResult';
 export * from './conversation';
 export * from './errorResponse';
 export * from './healthStatus';
