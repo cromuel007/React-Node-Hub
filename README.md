@@ -3,9 +3,14 @@ Developed a user administration system with built-in messaging functionality usi
 
 A full-stack user administration portal with JWT authentication, profile editing, and a user directory.
 
-## Run & Operate
+## Setup Database
 
 RENAME ALL .env.example TO .env
+
+Install docker and run 
+- `docker compose up` — create docker container for PostgreSQL
+
+## Run & Operate
 
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
