@@ -1,7 +1,4 @@
-Developed a user administration system with built-in messaging functionality using React, Node.js, and PostgreSQL.
-
-
-A full-stack user administration portal with JWT authentication, profile editing, and a user directory.
+A full-stack user administration portal with JWT authentication, profile editing, messaging feature, and a user directory.
 
 ## Setup Database
 
@@ -17,8 +14,9 @@ Install docker and run
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 
+
+## Demo accounts
 - `pnpm --filter @workspace/db run seed` — seed DB users (dev only)
-    ## Demo accounts
 
     All seeded users have password: `password123`
 
@@ -46,6 +44,7 @@ Install docker and run
 
 - `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
 - `lib/db/src/schema/users.ts` — users table definition
+- `lib/db/src/schema/messages.ts` — messages table definition
 - `artifacts/api-server/src/routes/auth.ts` — register, login, /auth/me
 - `artifacts/api-server/src/routes/users.ts` — list users, update profile, get user by ID
 - `artifacts/api-server/src/middlewares/auth.ts` — JWT requireAuth middleware + signToken
