@@ -17,6 +17,17 @@ Install docker and run
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 
+- `pnpm --filter @workspace/db run seed` — seed DB users (dev only)
+    ## Demo accounts
+
+    All seeded users have password: `password123`
+
+    - `alice@example.com` — admin role
+    - `bob@example.com` — user role
+    - `carol@example.com` — user role
+    - `david@example.com` — user role
+    - `eva@example.com` — user role
+
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 3000)
 - `pnpm --filter @workspace/user-admin run dev` — run the frontend (port 3001)
 
@@ -49,16 +60,3 @@ Install docker and run
 - `enabled: !!localStorage.getItem('token')` on `useGetMe` prevents unauthenticated 401 floods
 - `queryKey` is always supplied to TanStack Query v5 hooks to satisfy strict typing
 
-## Demo accounts
-
-All seeded users have password: `password123`
-
-- `alice@example.com` — admin role
-- `bob@example.com` — user role
-- `carol@example.com` — user role
-- `david@example.com` — user role
-- `eva@example.com` — user role
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
