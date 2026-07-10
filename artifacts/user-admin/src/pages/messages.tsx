@@ -196,20 +196,32 @@ export default function Messages() {
 
       {/* Chat panel */}
       <div className="flex-1 flex flex-col min-w-0">
-        {activeUserId && activeUser ? (
+        {activeUserId ? (
           <>
             {/* Header */}
             <div className="h-14 flex items-center gap-3 px-4 border-b border-border shrink-0">
-              <Avatar className="h-8 w-8 border border-border/50">
-                <AvatarImage src={activeUser.avatarUrl || undefined} />
-                <AvatarFallback className="text-xs font-semibold bg-primary/5 text-primary">
-                  {activeUser.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-semibold leading-none">{activeUser.name}</p>
-                <p className="text-xs text-muted-foreground font-mono mt-0.5">{activeUser.email}</p>
-              </div>
+              {activeUser ? (
+                <>
+                  <Avatar className="h-8 w-8 border border-border/50">
+                    <AvatarImage src={activeUser.avatarUrl || undefined} />
+                    <AvatarFallback className="text-xs font-semibold bg-primary/5 text-primary">
+                      {activeUser.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-semibold leading-none">{activeUser.name}</p>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">{activeUser.email}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-28" />
+                    <Skeleton className="h-3 w-36" />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Messages */}
@@ -271,7 +283,7 @@ export default function Messages() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Message ${activeUser.name}...`}
+                  placeholder={activeUser ? `Message ${activeUser.name}...` : "Type a message..."}
                   className="flex-1 bg-secondary/30 border-border/60 focus-visible:ring-primary rounded-full px-4"
                   autoComplete="off"
                 />
