@@ -28,6 +28,12 @@ if (!basePath) {
   );
 }
 
+const apiUrl = process.env.API_URL;
+
+if (!apiUrl) {
+  throw new Error("API_URL environment variable is required but was not provided.");
+}
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -68,10 +74,18 @@ export default defineConfig({
   server: {
     port,
     strictPort: true,
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     allowedHosts: true,
-    fs: {
-      strict: true,
+    proxy: {
+      "/api": {
+        target: apiUrl,
+        changeOrigin: true,
+      },
+      "/ws": {
+        target: apiUrl.replace(/^http/, "ws"),
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
   preview: {
