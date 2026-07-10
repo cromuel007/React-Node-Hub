@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,10 +36,59 @@ const profileSchema = z.object({
 });
 
 export default function Profile() {
+  const token = localStorage.getItem("token");
+
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
+  const [avatarSaved, setAvatarSaved] = useState(false);
+  const uploadedAvatarUrlRef = useRef<string | null>(null);
+  const avatarSavedRef = useRef(false);
+
+  async function handleAvatarUpload(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/uploads/avatar", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+
+      form.setValue("avatarUrl", data.url, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
+      uploadedAvatarUrlRef.current = data.url;
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -62,6 +111,25 @@ export default function Profile() {
     }
   }, [user, form]);
 
+  useEffect(() => {
+    return () => {
+      const uploadedUrl = uploadedAvatarUrlRef.current;
+
+      if (uploadedUrl && !avatarSavedRef.current) {
+        fetch("/api/uploads/avatar", {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: uploadedUrl,
+          }),
+        });
+      }
+    };
+  }, []);
+
   const updateMutation = useUpdateMe();
 
   function onSubmit(values: z.infer<typeof profileSchema>) {
@@ -77,6 +145,8 @@ export default function Profile() {
       { data: payload },
       {
         onSuccess: (updatedUser) => {
+          avatarSavedRef.current = true;
+          uploadedAvatarUrlRef.current = null;
           // Update cache directly to avoid flash
           queryClient.setQueryData(getGetMeQueryKey(), updatedUser);
           toast({
@@ -128,7 +198,7 @@ export default function Profile() {
                 <Camera className="w-3 h-3" /> Avatar Preview
               </div>
             </div>
-            
+
             <div className="flex-1 space-y-1">
               <h3 className="font-semibold text-lg">{user.email}</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -161,18 +231,33 @@ export default function Profile() {
                 name="avatarUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Avatar URL</FormLabel>
+                    <FormLabel>Upload Avatar</FormLabel>
+
                     <FormControl>
-                      <Input 
-                        placeholder="https://example.com/avatar.jpg" 
-                        {...field} 
+                      <Input
+                        type="hidden"
+                        placeholder="https://example.com/avatar.jpg"
+                        {...field}
                         value={field.value || ""}
                         className="max-w-md font-mono text-sm"
                       />
                     </FormControl>
-                    <FormDescription>
-                      Provide a direct link to an image.
-                    </FormDescription>
+
+                    <div className="mt-3 max-w-md space-y-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        disabled={uploading}
+                      />
+
+                      {uploading && (
+                        <p className="text-sm text-muted-foreground">
+                          Uploading...
+                        </p>
+                      )}
+                    </div>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -185,7 +270,7 @@ export default function Profile() {
                   <FormItem>
                     <FormLabel>Bio</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <Textarea
                         placeholder="Tell us a little bit about yourself..."
                         className="resize-none min-h-[120px]"
                         {...field}
@@ -201,8 +286,8 @@ export default function Profile() {
               />
 
               <div className="flex justify-end pt-4 border-t border-border">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={updateMutation.isPending || !form.formState.isDirty}
                   className="min-w-[120px]"
                 >
