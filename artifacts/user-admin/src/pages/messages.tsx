@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { format } from "date-fns";
 import { Send, MessageSquare } from "lucide-react";
 import {
@@ -24,14 +24,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Messages() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
+  const search = useSearch();
   const { user: me } = useAuth();
   const queryClient = useQueryClient();
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Parse ?with=userId from URL
-  const searchParams = new URLSearchParams(location.split("?")[1] ?? "");
+  const searchParams = new URLSearchParams(search);
   const activeUserId = searchParams.get("with") ? Number(searchParams.get("with")) : null;
 
   const { data: conversations = [], isLoading: convLoading } = useListConversations({
