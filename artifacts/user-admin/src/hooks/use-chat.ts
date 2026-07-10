@@ -11,50 +11,73 @@ export function useChat({ onMessage }: UseChatOptions = {}) {
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const attemptRef = useRef(0);
+  const unmountedRef = useRef(false);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    unmountedRef.current = false;
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.host;
-    const url = `${protocol}//${host}/ws?token=${encodeURIComponent(token)}`;
+    function connect() {
+      if (unmountedRef.current) return;
 
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    ws.onopen = () => {
-      setConnected(true);
-    };
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const host = window.location.host;
+      const url = `${protocol}//${host}/ws?token=${encodeURIComponent(token)}`;
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data as string) as { type: string; payload?: unknown };
-        if (data.type === "message" && data.payload) {
-          onMessageRef.current?.(data.payload as Message);
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        if (unmountedRef.current) { ws.close(); return; }
+        setConnected(true);
+        attemptRef.current = 0;
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data as string) as { type: string; payload?: unknown };
+          if (data.type === "message" && data.payload) {
+            onMessageRef.current?.(data.payload as Message);
+          }
+        } catch {
+          // ignore malformed
         }
-      } catch {
-        // ignore malformed
-      }
-    };
+      };
 
-    ws.onclose = () => {
-      setConnected(false);
-    };
+      ws.onclose = (ev) => {
+        setConnected(false);
+        wsRef.current = null;
+        // Don't reconnect if unmounted or intentionally closed (code 1000)
+        if (unmountedRef.current || ev.code === 1000 || ev.code === 4001) return;
+        // Exponential backoff: 1s, 2s, 4s, 8s, max 15s
+        const delay = Math.min(1000 * Math.pow(2, attemptRef.current), 15000);
+        attemptRef.current += 1;
+        reconnectTimerRef.current = setTimeout(connect, delay);
+      };
 
-    ws.onerror = () => {
-      setConnected(false);
-    };
+      ws.onerror = () => {
+        setConnected(false);
+      };
+    }
 
     // Keepalive ping every 25s
     const ping = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "ping" }));
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: "ping" }));
       }
     }, 25000);
 
+    connect();
+
     return () => {
+      unmountedRef.current = true;
       clearInterval(ping);
-      ws.close();
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      wsRef.current?.close(1000, "unmount");
     };
   }, []);
 

@@ -170,7 +170,7 @@ export default function UsersList() {
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => setDeleteTarget({ id: user.id, name: user.name })}
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: user.id, name: user.name }); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
