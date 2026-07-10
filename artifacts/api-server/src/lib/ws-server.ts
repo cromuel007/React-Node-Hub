@@ -4,6 +4,7 @@ import type { Server } from "http";
 import jwt from "jsonwebtoken";
 import { logger } from "./logger";
 import type { AuthPayload } from "../middlewares/auth";
+import 'dotenv/config';
 
 const rawSecret = process.env.JWT_SECRET ?? process.env.SESSION_SECRET;
 const JWT_SECRET: string = rawSecret ?? "";

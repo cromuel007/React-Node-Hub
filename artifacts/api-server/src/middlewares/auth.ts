@@ -1,5 +1,6 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import 'dotenv/config';
 
 const rawSecret = process.env.JWT_SECRET ?? process.env.SESSION_SECRET;
 
