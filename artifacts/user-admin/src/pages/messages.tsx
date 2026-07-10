@@ -54,7 +54,7 @@ export default function Messages() {
       onSuccess: (newMsg) => {
         queryClient.setQueryData(
           getListMessagesQueryKey({ withUserId: activeUserId! }),
-          (old: Message[] = []) => [...old, newMsg],
+          (old: Message[] = []) => old.some((m) => m.id === newMsg.id) ? old : [...old, newMsg],
         );
         queryClient.invalidateQueries({ queryKey: getListConversationsQueryKey() });
         setInput("");
@@ -65,7 +65,12 @@ export default function Messages() {
   // Real-time via WebSocket
   useChat({
     onMessage: useCallback((msg: Message) => {
-      const otherId = msg.senderId === me?.id ? msg.recipientId : msg.senderId;
+      // Outgoing messages are already added by onSuccess — only handle incoming.
+      if (msg.senderId === me?.id) {
+        queryClient.invalidateQueries({ queryKey: getListConversationsQueryKey() });
+        return;
+      }
+      const otherId = msg.senderId;
       queryClient.setQueryData(
         getListMessagesQueryKey({ withUserId: otherId }),
         (old: Message[] = []) => {
