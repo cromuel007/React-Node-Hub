@@ -64,7 +64,7 @@ Start the applications:
 - `lib/db/src/schema/messages.ts` — Message table schema.
 - `artifacts/api-server/src/routes/auth.ts` — Authentication routes (`register`, `login`, `/auth/me`).
 - `artifacts/api-server/src/routes/users.ts` — User routes (list users, update profile, get user by ID).
-- `artifacts/api-server/src/routes/messages.ts` — Messages routes (conversations, messages).
+- `artifacts/api-server/src/routes/messages.ts` — Message routes (conversations, messages).
 - `artifacts/api-server/src/middlewares/auth.ts` — JWT authentication middleware (`requireAuth`) and `signToken`.
 - `artifacts/user-admin/src/` — React frontend (login, register, dashboard, users, and profile pages).
 - `artifacts/user-admin/src/hooks/use-auth.ts` — Authentication hook (login, logout, current user).
