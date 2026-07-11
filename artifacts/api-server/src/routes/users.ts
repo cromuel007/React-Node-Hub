@@ -3,8 +3,8 @@ import { eq, ilike, or, count } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { requireAuth, type AuthPayload } from "../middlewares/auth";
 import { UpdateMeBody } from "@workspace/api-zod";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { s3 } from "../lib/s3";
 
 const router: IRouter = Router();
 
@@ -77,6 +77,7 @@ router.put("/users/me", requireAuth, async (req, res): Promise<void> => {
   }
 
   const updates: Partial<typeof usersTable.$inferInsert> = {};
+
   if (parsed.data.name != null) updates.name = parsed.data.name;
   if (parsed.data.bio != null) updates.bio = parsed.data.bio;
   if (parsed.data.avatarUrl != null) updates.avatarUrl = parsed.data.avatarUrl;
@@ -94,20 +95,24 @@ router.put("/users/me", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  // Delete previous avatar if it was replaced
+  // Delete previous avatar from S3 if it was replaced
   if (
     oldAvatarUrl &&
     user.avatarUrl &&
     oldAvatarUrl !== user.avatarUrl
   ) {
     try {
-      const uploadsBase = `${req.protocol}://${req.get("host")}/uploads/`;
+      const objectUrl = new URL(oldAvatarUrl);
 
-      if (oldAvatarUrl.startsWith(uploadsBase)) {
-        const filename = path.basename(oldAvatarUrl);
-
-        await fs.unlink(
-          path.join(process.cwd(), "uploads", filename)
+      if (
+        objectUrl.hostname ===
+        `${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`
+      ) {
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: process.env.AWS_S3_BUCKET!,
+            Key: objectUrl.pathname.substring(1),
+          }),
         );
       }
     } catch (err) {
@@ -139,6 +144,12 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  // Get the user first so we know which avatar to delete
+  const [existingUser] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, id));
+
   const [deleted] = await db
     .delete(usersTable)
     .where(eq(usersTable.id, id))
@@ -147,6 +158,27 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
   if (!deleted) {
     res.status(404).json({ error: "User not found" });
     return;
+  }
+
+  // Delete avatar from S3 (best effort)
+  if (existingUser?.avatarUrl) {
+    try {
+      const objectUrl = new URL(existingUser.avatarUrl);
+
+      if (
+        objectUrl.hostname ===
+        `${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`
+      ) {
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: process.env.AWS_S3_BUCKET!,
+            Key: objectUrl.pathname.substring(1),
+          }),
+        );
+      }
+    } catch (err) {
+      console.error("Failed to delete avatar:", err);
+    }
   }
 
   res.sendStatus(204);

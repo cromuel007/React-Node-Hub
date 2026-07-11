@@ -151,6 +151,13 @@ export default function Profile() {
           uploadedAvatarUrlRef.current = null;
           // Update cache directly to avoid flash
           queryClient.setQueryData(getGetMeQueryKey(), updatedUser);
+
+          form.reset({
+            name: updatedUser.name,
+            bio: updatedUser.bio ?? "",
+            avatarUrl: updatedUser.avatarUrl ?? "",
+          });
+
           toast({
             title: "Profile updated",
             description: "Your changes have been saved successfully.",
