@@ -24,9 +24,13 @@ export function useChat({ onMessage }: UseChatOptions = {}) {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.host;
-      const url = `${protocol}//${host}/ws?token=${encodeURIComponent(token)}`;
+      const isProduction = import.meta.env.MODE === "production";
+
+      const wsBase = isProduction
+        ? (import.meta.env.VITE_WEBSOCKET_URL as string)
+        : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`;
+
+      const url = `${wsBase}?token=${encodeURIComponent(token)}`;
 
       const ws = new WebSocket(url);
       wsRef.current = ws;
