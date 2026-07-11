@@ -5,6 +5,10 @@
       "destination": "https://workspaceapi-server-production-91a2.up.railway.app/api/:path*"
     },
     {
+      "source": "/ws",
+      "destination": "https://workspaceapi-server-production-91a2.up.railway.app/ws"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
