@@ -6,7 +6,7 @@
     },
     {
       "source": "/ws",
-      "destination": "https://workspaceapi-server-production-91a2.up.railway.app/ws"
+      "destination": "ws://workspaceapi-server-production-91a2.up.railway.app/ws"
     },
     {
       "source": "/(.*)",
