@@ -139,7 +139,7 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  // Get existing user
+  // Get the user first so we know which avatar to delete
   const [existingUser] = await db
     .select()
     .from(usersTable)
