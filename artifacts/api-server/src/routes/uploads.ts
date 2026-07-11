@@ -2,19 +2,19 @@ import { Router, type IRouter } from "express";
 import multer from "multer";
 import path from "node:path";
 import crypto from "node:crypto";
-import fs from "node:fs/promises";
 import { requireAuth } from "../middlewares/auth";
+
+import {
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { s3 } from "../lib/s3";
 
 const router: IRouter = Router();
 
-const storage = multer.diskStorage({
-  destination: "uploads",
-  filename: (_, file, cb) => {
-    cb(null, `${crypto.randomUUID()}${path.extname(file.originalname)}`);
-  },
+const upload = multer({
+  storage: multer.memoryStorage(),
 });
-
-const upload = multer({ storage });
 
 router.post(
   "/uploads/avatar",
@@ -28,12 +28,33 @@ router.post(
       return;
     }
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    try {
+      const key = `avatars/${crypto.randomUUID()}${path.extname(
+        req.file.originalname,
+      )}`;
 
-    res.json({
-      url: `${baseUrl}/uploads/${req.file.filename}`,
-    });
-  }
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET!,
+          Key: key,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        }),
+      );
+
+      const url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+      res.json({
+        url,
+      });
+    } catch (error) {
+      console.error("Upload avatar error:", error);
+
+      res.status(500).json({
+        message: "Failed to upload avatar",
+      });
+    }
+  },
 );
 
 router.delete(
@@ -50,10 +71,14 @@ router.delete(
     }
 
     try {
-      const filename = path.basename(url);
-      const filePath = path.join(process.cwd(), "uploads", filename);
+      const objectUrl = new URL(url);
 
-      await fs.unlink(filePath);
+      await s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET!,
+          Key: objectUrl.pathname.substring(1),
+        }),
+      );
 
       res.json({
         message: "Avatar deleted successfully",
@@ -65,7 +90,7 @@ router.delete(
         message: "File not found",
       });
     }
-  }
+  },
 );
 
 export default router;
