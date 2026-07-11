@@ -1,5 +1,11 @@
 A full-stack user administration portal featuring JWT authentication, user profile management, messaging, and a user directory.
 
+## 🚀 Live Demo https://react-node-hub-user-admin.vercel.app
+
+Live Demo is deployed with:
+- **Frontend:** Vercel
+- **API:** Railway
+
 ## Setup ENV & Database
 
 Rename all `.env.example` files to `.env` in the following directories:
