@@ -82,3 +82,7 @@ Start the applications:
 - All protected API routes are secured using the `requireAuth` middleware.
 - `enabled: !!localStorage.getItem('token')` on `useGetMe` prevents unnecessary unauthenticated `401 Unauthorized` requests.
 - Every TanStack Query v5 hook defines a `queryKey` to ensure strict type safety.
+
+## Contact
+
+- [LinkedIn](https://www.linkedin.com/in/cromuel)
