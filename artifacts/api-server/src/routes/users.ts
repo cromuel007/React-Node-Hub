@@ -143,7 +143,7 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
   const [existingUser] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, auth.userId));
+    .where(eq(usersTable.id, id));
 
   const oldAvatarUrl = existingUser.avatarUrl;
 
