@@ -145,11 +145,6 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
     .from(usersTable)
     .where(eq(usersTable.id, auth.userId));
 
-  if (!existingUser) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
   const oldAvatarUrl = existingUser.avatarUrl;
 
   const [deleted] = await db
@@ -163,9 +158,7 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
   }
 
   // Delete previous avatar if it was replaced
-  if (
-    oldAvatarUrl
-  ) {
+  if (oldAvatarUrl) {
     try {
       const uploadsBase = `${req.protocol}://${req.get("host")}/uploads/`;
 
