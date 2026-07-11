@@ -139,6 +139,19 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  // Get existing user
+  const [existingUser] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, auth.userId));
+
+  if (!existingUser) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const oldAvatarUrl = existingUser.avatarUrl;
+
   const [deleted] = await db
     .delete(usersTable)
     .where(eq(usersTable.id, id))
@@ -147,6 +160,25 @@ router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
   if (!deleted) {
     res.status(404).json({ error: "User not found" });
     return;
+  }
+
+  // Delete previous avatar if it was replaced
+  if (
+    oldAvatarUrl
+  ) {
+    try {
+      const uploadsBase = `${req.protocol}://${req.get("host")}/uploads/`;
+
+      if (oldAvatarUrl.startsWith(uploadsBase)) {
+        const filename = path.basename(oldAvatarUrl);
+
+        await fs.unlink(
+          path.join(process.cwd(), "uploads", filename)
+        );
+      }
+    } catch (err) {
+      console.error("Failed to delete old avatar:", err);
+    }
   }
 
   res.sendStatus(204);
