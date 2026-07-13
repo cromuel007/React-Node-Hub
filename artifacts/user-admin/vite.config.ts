@@ -15,7 +15,7 @@ if (Number.isNaN(port) || port <= 0) {
 const basePath = process.env.BASE_PATH ?? "/";
 const apiUrl =
   process.env.NODE_ENV === "production"
-    ? (process.env.VITE_API_URL ?? "https://workspaceapi-server-production-91a2.up.railway.app")
+    ? (process.env.VITE_API_URL ?? "https://react-node-hub.onrender.com")
     : (process.env.API_URL ?? "http://localhost:3000");
 
 export default defineConfig({

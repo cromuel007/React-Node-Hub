@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://workspaceapi-server-production-91a2.up.railway.app/api/:path*"
+      "destination": "https://react-node-hub.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
